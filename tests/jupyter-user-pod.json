@@ -1,0 +1,109 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "labels": {
+            "app": "jupyterhub",
+            "chart": "jupyterhub-0.9-dev",
+            "component": "singleuser-server",
+            "heritage": "jupyterhub",
+            "hub.jupyter.org/network-access-hub": "true",
+            "primehub.io/group": "escaped-mock",
+            "primehub.io/user": "escaped-mock-user",
+            "release": "primehub"
+        },
+        "name": "jupyter-mock-user",
+        "namespace": "mock"
+    },
+    "spec": {
+        "containers": [
+            {
+                "image": "jupyter/base-notebook:e255f1aa00b2",
+                "name": "notebook",
+                "env": [
+                    {
+                        "name": "JUPYTER_ENABLE_LAB",
+                        "value": "yes"
+                    },
+                    {
+                        "name": "CHOWN_EXTRA",
+                        "value": "/project/not-found-1,/project/not-found-2,/project/foo"
+                    },
+                    {
+                        "name": "JUPYTERHUB_ADMIN_ACCESS",
+                        "value": "1"
+                    }
+                ],
+                "volumeMounts": [
+                    {
+                        "mountPath": "/home/jovyan",
+                        "name": "volume-phadmin"
+                    },
+                    {
+                        "mountPath": "/project/not-found-1",
+                        "name": "project-not-found-1"
+                    },
+                    {
+                        "mountPath": "/usr/local/bin/start-notebook.d",
+                        "name": "start-notebook-d"
+                    },
+                    {
+                        "mountPath": "/project/not-found-2",
+                        "name": "project-not-found-2"
+                    },
+                    {
+                        "mountPath": "/project/foo",
+                        "name": "project-foo"
+                    },
+                    {
+                        "mountPath": "/opt/primehub-start-notebook",
+                        "name": "primehub-start-notebook"
+                    }
+                ]
+            }
+        ],
+        "nodeSelector": {
+            "component": "singleuser-server"
+        },
+        "volumes": [
+            {
+                "name": "volume-phadmin",
+                "persistentVolumeClaim": {
+                    "claimName": "claim-phadmin"
+                }
+            },
+            {
+                "configMap": {
+                    "defaultMode": 420,
+                    "name": "start-notebook-d"
+                },
+                "name": "start-notebook-d"
+            },
+            {
+                "name": "project-not-found-2",
+                "persistentVolumeClaim": {
+                    "claimName": "project-not-found-2"
+                }
+            },
+            {
+                "name": "project-foo",
+                "persistentVolumeClaim": {
+                    "claimName": "project-foo"
+                }
+            },
+            {
+                "name": "project-not-found-1",
+                "persistentVolumeClaim": {
+                    "claimName": "project-claim-not-found-1"
+                }
+            },
+            {
+                "configMap": {
+                    "defaultMode": 511,
+                    "name": "primehub-start-notebook"
+                },
+                "name": "primehub-start-notebook"
+            }
+        ]
+    }
+}

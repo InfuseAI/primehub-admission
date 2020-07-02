@@ -1,0 +1,390 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "annotations": {
+            "kubernetes.io/limit-ranger": "LimitRanger plugin set: cpu request for container keycloak; cpu request for container cloudsql-proxy; cpu request for init container theme-provider"
+        },
+        "creationTimestamp": "2019-07-12T06:33:57Z",
+        "generateName": "keycloak-",
+        "labels": {
+            "app": "keycloak",
+            "controller-revision-hash": "keycloak-556945f85",
+            "release": "keycloak",
+            "statefulset.kubernetes.io/pod-name": "keycloak-0"
+        },
+        "name": "keycloak-0",
+        "namespace": "default",
+        "ownerReferences": [
+            {
+                "apiVersion": "apps/v1",
+                "blockOwnerDeletion": true,
+                "controller": true,
+                "kind": "StatefulSet",
+                "name": "keycloak",
+                "uid": "06b0ed60-a46f-11e9-97cc-42010a8c0043"
+            }
+        ],
+        "resourceVersion": "2245",
+        "selfLink": "/api/v1/namespaces/default/pods/keycloak-0",
+        "uid": "06b71b8d-a46f-11e9-97cc-42010a8c0043"
+    },
+    "spec": {
+        "affinity": {
+            "podAntiAffinity": {
+                "preferredDuringSchedulingIgnoredDuringExecution": [
+                    {
+                        "podAffinityTerm": {
+                            "labelSelector": {
+                                "matchExpressions": [
+                                    {
+                                        "key": "role",
+                                        "operator": "NotIn",
+                                        "values": [
+                                            "test"
+                                        ]
+                                    }
+                                ],
+                                "matchLabels": {
+                                    "app": "keycloak",
+                                    "release": "keycloak"
+                                }
+                            },
+                            "topologyKey": "failure-domain.beta.kubernetes.io/zone"
+                        },
+                        "weight": 100
+                    }
+                ],
+                "requiredDuringSchedulingIgnoredDuringExecution": [
+                    {
+                        "labelSelector": {
+                            "matchExpressions": [
+                                {
+                                    "key": "role",
+                                    "operator": "NotIn",
+                                    "values": [
+                                        "test"
+                                    ]
+                                }
+                            ],
+                            "matchLabels": {
+                                "app": "keycloak",
+                                "release": "keycloak"
+                            }
+                        },
+                        "topologyKey": "kubernetes.io/hostname"
+                    }
+                ]
+            }
+        },
+        "containers": [
+            {
+                "command": [
+                    "/scripts/keycloak.sh"
+                ],
+                "env": [
+                    {
+                        "name": "KEYCLOAK_USER",
+                        "value": "keycloak"
+                    },
+                    {
+                        "name": "KEYCLOAK_PASSWORD",
+                        "valueFrom": {
+                            "secretKeyRef": {
+                                "key": "password",
+                                "name": "keycloak-http"
+                            }
+                        }
+                    },
+                    {
+                        "name": "DB_VENDOR",
+                        "value": "postgres"
+                    },
+                    {
+                        "name": "DB_ADDR",
+                        "value": "127.0.0.1"
+                    },
+                    {
+                        "name": "DB_PORT",
+                        "value": "5432"
+                    },
+                    {
+                        "name": "DB_DATABASE",
+                        "value": "keycloak-qrtt1"
+                    },
+                    {
+                        "name": "DB_USER",
+                        "value": "keycloak-qrtt1"
+                    },
+                    {
+                        "name": "DB_PASSWORD",
+                        "valueFrom": {
+                            "secretKeyRef": {
+                                "key": "password",
+                                "name": "keycloak-db"
+                            }
+                        }
+                    }
+                ],
+                "image": "jboss/keycloak:4.1.0.Final",
+                "imagePullPolicy": "IfNotPresent",
+                "livenessProbe": {
+                    "failureThreshold": 3,
+                    "httpGet": {
+                        "path": "/auth/",
+                        "port": "http",
+                        "scheme": "HTTP"
+                    },
+                    "initialDelaySeconds": 120,
+                    "periodSeconds": 10,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 5
+                },
+                "name": "keycloak",
+                "ports": [
+                    {
+                        "containerPort": 8080,
+                        "name": "http",
+                        "protocol": "TCP"
+                    }
+                ],
+                "readinessProbe": {
+                    "failureThreshold": 3,
+                    "httpGet": {
+                        "path": "/auth/",
+                        "port": "http",
+                        "scheme": "HTTP"
+                    },
+                    "initialDelaySeconds": 30,
+                    "periodSeconds": 10,
+                    "successThreshold": 1,
+                    "timeoutSeconds": 1
+                },
+                "resources": {
+                    "requests": {
+                        "cpu": "100m"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/scripts",
+                        "name": "scripts"
+                    },
+                    {
+                        "mountPath": "/opt/jboss/keycloak/themes/primehub",
+                        "name": "theme-primehub"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "default-token-lq9gp",
+                        "readOnly": true
+                    }
+                ]
+            },
+            {
+                "args": [
+                    "-instances=infuseai-dev:asia-east1:terraform-shared=tcp:5432",
+                    "-credential_file=/secrets/cloudsql/credentials.json"
+                ],
+                "command": [
+                    "/cloud_sql_proxy"
+                ],
+                "image": "gcr.io/cloudsql-docker/gce-proxy:1.11",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "cloudsql-proxy",
+                "resources": {
+                    "requests": {
+                        "cpu": "100m"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/secrets/cloudsql",
+                        "name": "cloudsql-creds",
+                        "readOnly": true
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "default-token-lq9gp",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "hostname": "keycloak-0",
+        "initContainers": [
+            {
+                "args": [
+                    "-c",
+                    "echo \"Copying theme...\"\ncp -R /primehub/* /theme-primehub/\n"
+                ],
+                "command": [
+                    "sh"
+                ],
+                "image": "registry.aiacademy.tw/aai/keycloak/theme:4.1.0-primehub-8203da4",
+                "imagePullPolicy": "IfNotPresent",
+                "name": "theme-provider",
+                "resources": {
+                    "requests": {
+                        "cpu": "100m"
+                    }
+                },
+                "terminationMessagePath": "/dev/termination-log",
+                "terminationMessagePolicy": "File",
+                "volumeMounts": [
+                    {
+                        "mountPath": "/theme-primehub",
+                        "name": "theme-primehub"
+                    },
+                    {
+                        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                        "name": "default-token-lq9gp",
+                        "readOnly": true
+                    }
+                ]
+            }
+        ],
+        "nodeName": "gke-cluster-qrtt1-default-pool-5b5195dc-zk68",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+            "fsGroup": 1000,
+            "runAsNonRoot": true,
+            "runAsUser": 1000
+        },
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "subdomain": "keycloak-headless",
+        "terminationGracePeriodSeconds": 60,
+        "tolerations": [
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/not-ready",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            },
+            {
+                "effect": "NoExecute",
+                "key": "node.kubernetes.io/unreachable",
+                "operator": "Exists",
+                "tolerationSeconds": 300
+            }
+        ],
+        "volumes": [
+            {
+                "configMap": {
+                    "defaultMode": 365,
+                    "name": "keycloak"
+                },
+                "name": "scripts"
+            },
+            {
+                "emptyDir": {},
+                "name": "theme-primehub"
+            },
+            {
+                "name": "cloudsql-creds",
+                "secret": {
+                    "defaultMode": 420,
+                    "secretName": "cloudsql-instancecredentials"
+                }
+            },
+            {
+                "name": "default-token-lq9gp",
+                "secret": {
+                    "defaultMode": 420,
+                    "secretName": "default-token-lq9gp"
+                }
+            }
+        ]
+    },
+    "status": {
+        "conditions": [
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2019-07-12T06:33:58Z",
+                "status": "True",
+                "type": "Initialized"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2019-07-12T06:35:15Z",
+                "status": "True",
+                "type": "Ready"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2019-07-12T06:35:15Z",
+                "status": "True",
+                "type": "ContainersReady"
+            },
+            {
+                "lastProbeTime": null,
+                "lastTransitionTime": "2019-07-12T06:33:57Z",
+                "status": "True",
+                "type": "PodScheduled"
+            }
+        ],
+        "containerStatuses": [
+            {
+                "containerID": "docker://82f1592a0f86de60bf41704cfe16364bea21b9b460f440777a0e687bbd9f7133",
+                "image": "gcr.io/cloudsql-docker/gce-proxy:1.11",
+                "imageID": "docker-pullable://gcr.io/cloudsql-docker/gce-proxy@sha256:5c690349ad8041e8b21eaa63cb078cf13188568e0bfac3b5a914da3483079e2b",
+                "lastState": {},
+                "name": "cloudsql-proxy",
+                "ready": true,
+                "restartCount": 0,
+                "state": {
+                    "running": {
+                        "startedAt": "2019-07-12T06:34:32Z"
+                    }
+                }
+            },
+            {
+                "containerID": "docker://e8f8c8b33fe4834a635556e247d0723dd6b67e11224e466005521a9523669540",
+                "image": "jboss/keycloak:4.1.0.Final",
+                "imageID": "docker-pullable://jboss/keycloak@sha256:14de3b512d227732270b3e6f4fa626a096542a2e8c4ec32480de6a3ca64c25c2",
+                "lastState": {},
+                "name": "keycloak",
+                "ready": true,
+                "restartCount": 0,
+                "state": {
+                    "running": {
+                        "startedAt": "2019-07-12T06:34:29Z"
+                    }
+                }
+            }
+        ],
+        "hostIP": "10.140.0.127",
+        "initContainerStatuses": [
+            {
+                "containerID": "docker://3b2b595edfef605130bf79a3c00b2150c35eb12749affd2dddd9067d1799a978",
+                "image": "registry.aiacademy.tw/aai/keycloak/theme:4.1.0-primehub-8203da4",
+                "imageID": "docker-pullable://registry.aiacademy.tw/aai/keycloak/theme@sha256:335ab61d52564b6b071d4de700dfc5f03b60a76ee834b4a544307413d15df147",
+                "lastState": {},
+                "name": "theme-provider",
+                "ready": true,
+                "restartCount": 0,
+                "state": {
+                    "terminated": {
+                        "containerID": "docker://3b2b595edfef605130bf79a3c00b2150c35eb12749affd2dddd9067d1799a978",
+                        "exitCode": 0,
+                        "finishedAt": "2019-07-12T06:33:58Z",
+                        "reason": "Completed",
+                        "startedAt": "2019-07-12T06:33:58Z"
+                    }
+                }
+            }
+        ],
+        "phase": "Running",
+        "podIP": "10.52.1.9",
+        "qosClass": "Burstable",
+        "startTime": "2019-07-12T06:33:57Z"
+    }
+}
