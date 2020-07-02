@@ -1,6 +1,7 @@
 ![logo](https://github.com/InfuseAI/primehub/raw/master/docs/media/logo.png?raw=true "PrimeHub")
 
-[![primehub-admission](https://img.shields.io/docker/pulls/infuseai/primehub-admission?label=ce%20docker%20pulls)](https://hub.docker.com/r/infuseai/primehub-admission)
+[![CircleCI](https://circleci.com/gh/InfuseAI/primehub-admission.svg?style=svg)](https://circleci.com/gh/InfuseAI/primehub-admission)
+[![primehub-admission](https://img.shields.io/docker/pulls/infuseai/primehub-admission?label=docker%20pulls)](https://hub.docker.com/r/infuseai/primehub-admission)
 
 # PrimeHub Admission
 
