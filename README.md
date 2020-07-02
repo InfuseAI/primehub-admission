@@ -1,3 +1,11 @@
+![logo](https://github.com/InfuseAI/primehub/raw/master/docs/media/logo.png?raw=true "PrimeHub")
+
+[![primehub-admission](https://img.shields.io/docker/pulls/infuseai/primehub-admission?label=ce%20docker%20pulls)](https://hub.docker.com/r/infuseai/primehub-admission)
+
+# PrimeHub Admission
+
+PrimeHub-admission is a critical component of [PrimeHub](https://github.com/infuseai/primehub).
+
 ## Development
 
 We are using `Pipenv` to manage python environment.
@@ -28,11 +36,8 @@ You can also publish image manually:
 `PYTHONPATH=src py.test --cov=.`
 
 ## Enable Admission Webhook
-```
-make primehub-install
-```
 
-And remember to enable for some namespaces.
+Enable primehub-admission for a specific namespace.
 ```
 kubectl label ns hub primehub.io/resources-validation-webhook=enabled
 kubectl label ns hub primehub.io/image-mutation-webhook=enabled
