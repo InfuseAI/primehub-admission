@@ -9,7 +9,7 @@ PrimeHub-admission is a critical component of [PrimeHub](https://github.com/infu
 
 ## Features
 
-PrimeHub-admission utilized [Dynamic Admissino Control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) of Kubernetes to implement several PrimeHub features, including:
+PrimeHub-admission utilized [Dynamic Admission Control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) of Kubernetes to implement several PrimeHub features, including:
 - Resource validation, check if certain group/user exceeds the given resource limit.
 - PVC check - Check if a PVC is no longer exists before user pod is allocated.
 - Image mutation - Modify image prefix for air-gapped environment.
