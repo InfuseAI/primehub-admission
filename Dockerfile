@@ -1,15 +1,17 @@
 # Python image to use.
 FROM python:3.7-alpine
 
-RUN apk add binutils libc-dev gcc
+RUN apk add binutils libc-dev gcc libffi-dev openssl-dev build-base
 
 # Set the working directory to /app
 WORKDIR /app
 
 # copy the requirements file used for dependencies
 COPY requirements.txt .
+ENV CRYPTOGRAPHY_DONT_BUILD_RUST 1
 
 # Install any needed packages specified in requirements.txt
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Copy the rest of the working directory contents into the container at /app
