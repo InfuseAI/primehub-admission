@@ -1,5 +1,4 @@
 from kubernetes import client, config
-import json
 import os
 
 class PvcCheck:

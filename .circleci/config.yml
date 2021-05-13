@@ -3,7 +3,7 @@ version: 2
 jobs:
   unit_test:
     docker:
-      - image: circleci/python:3.6.1
+      - image: circleci/python:3.7
 
     working_directory: ~/repo
 
@@ -20,6 +20,7 @@ jobs:
             make update-shared-lib
             primehub_sha=$(make get-primehub-sha)
             z2jh_sha=$(curl -s "https://api.github.com/repos/infuseai/primehub/contents/vendor?ref=${primehub_sha}" | grep -o -e '"sha": "\w\+"' | tr -d '"' | cut -d' ' -f2)
+            python -m pip install -U pip
             pip3 install -r https://raw.githubusercontent.com/InfuseAI/zero-to-jupyterhub-k8s/${z2jh_sha}/images/hub/requirements.txt
             pip3 install -r requirements.txt
             pip3 install pytest-cov
