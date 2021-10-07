@@ -21,7 +21,7 @@ class LicenseCheck:
             if match:
                 license_platform_type = match.group(1)
                 if license_platform_type !=  self.platform:
-                    raise RuntimeError("The platform error")
+                    raise RuntimeError(f"The license is for \"{license_platform_type}\", but \"{self.platform}\" license is required.")
 
     def validate(self, license):
         self._validate_signed_license(license["spec"]["signed_license"])
