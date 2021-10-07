@@ -27,7 +27,7 @@ You can also publish image manually:
 
 ### Run Tests
 
-`PYTHONPATH=src py.test --cov=.`
+`py.test --cov=.`
 
 ## Enable Admission Webhook
 

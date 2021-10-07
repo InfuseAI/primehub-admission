@@ -13,8 +13,8 @@ help:
 	@echo "  update-shared-lib"
 
 update-shared-lib:
-	@echo "Updating src/primehub_utils.py"; \
-	curl -s -o src/primehub_utils.py -L "https://raw.githubusercontent.com/InfuseAI/primehub/$(PRIMEHUB_SHA)/chart/scripts/jupyterhub/config/primehub_utils.py"
+	@echo "Updating primehub_admission/primehub_utils.py"; \
+	curl -s -o primehub_admission/primehub_utils.py -L "https://raw.githubusercontent.com/InfuseAI/primehub/$(PRIMEHUB_SHA)/chart/scripts/jupyterhub/config/primehub_utils.py"
 
 get-primehub-sha:
 	@printf $(PRIMEHUB_SHA)

@@ -26,7 +26,7 @@ jobs:
             pip3 install pytest-cov
 
             # run tests
-            PYTHONPATH=src py.test --cov=. --cov-report html
+            py.test --cov=. --cov-report html
 
             # upload artifacts
             mkdir -p /tmp/artifacts

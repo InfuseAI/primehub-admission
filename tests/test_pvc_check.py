@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 from kubernetes import client
-from src.pvc_check import PvcCheck
+from primehub_admission.pvc_check import PvcCheck
 import json
 import os
 
@@ -28,7 +28,7 @@ class PvcCheckMock(PvcCheck):
     def _load_pod_example(self):
         test_file_dir = os.path.dirname(os.path.realpath(__file__))
         pod_json = os.path.join(test_file_dir, "jupyter-user-pod.json")
-    
+
         with open(pod_json) as fh:
             return json.loads(fh.read())
 

@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, Mock
 from kubernetes.client import V1Container, V1ResourceRequirements, V1PodList, V1PodStatus
 from kubespawner.objects import make_pod
 
-from src.resources_validation import ResourcesValidation
-from src.primehub_utils import *
+from primehub_admission.resources_validation import ResourcesValidation
+from primehub_admission.primehub_utils import *
 
 _TEST_GROUP = "PrimeHub-unit-test"
 _TEST_USER = "Test-user"

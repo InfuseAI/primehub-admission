@@ -1,5 +1,5 @@
 import unittest
-from src.image_patcher import *
+from primehub_admission.image_patcher import *
 import json
 import os
 
