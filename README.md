@@ -13,6 +13,7 @@ PrimeHub-admission utilized [Dynamic Admission Control](https://kubernetes.io/do
 - Resource validation, check if certain group/user exceeds the given resource limit.
 - PVC check - Check if a PVC is no longer exists before user pod is allocated.
 - Image mutation - Modify image prefix for air-gapped environment.
+- License Check - Check if a License is valid for current platform.
 
 ## Enable Admission Webhook
 
