@@ -5,7 +5,7 @@ from kubernetes.client import V1Container, V1ResourceRequirements, V1PodList, V1
 from kubespawner.objects import make_pod
 
 from src.resources_validation import ResourcesValidation
-from primehub_utils import *
+from src.primehub_utils import *
 
 _TEST_GROUP = "PrimeHub-unit-test"
 _TEST_USER = "Test-user"
@@ -104,17 +104,17 @@ class objdict(dict):
 
 class TestValidateResources(unittest.TestCase):
     def test_user_quota_fail(self):
-        for resource_type in ['cpu', 'gpu', 'memory']:             
-            rv = ResourcesValidationMock({}, mock=True)   
-            self.assertFalse(rv.validate_resources("USER", 
+        for resource_type in ['cpu', 'gpu', 'memory']:
+            rv = ResourcesValidationMock({}, mock=True)
+            self.assertFalse(rv.validate_resources("USER",
                 *resource_parameters_generator(resource_type, True, False)))
             self.assertTrue(rv.last_error_message.startswith(
                 'User {} exceeded {}'.format(_TEST_USER, resource_type)))
 
     def test_group_quota_fail(self):
         for resource_type in ['cpu', 'gpu', 'memory']:
-            rv = ResourcesValidationMock({}, mock=True)   
-            self.assertFalse(rv.validate_resources("GROUP", 
+            rv = ResourcesValidationMock({}, mock=True)
+            self.assertFalse(rv.validate_resources("GROUP",
                 *resource_parameters_generator(resource_type, False, True)))
             self.assertTrue(rv.last_error_message.startswith(
                 'Group {} exceeded {}'.format(_TEST_GROUP, resource_type)))
@@ -247,7 +247,7 @@ class TestValidateResources(unittest.TestCase):
         self.assertFalse(rv.validate_resources("GROUP", request, group_quota, group_usage))
         self.assertTrue(rv.last_error_message.startswith(
             'Group {} exceeded {}'.format(_TEST_GROUP, resource_type)))
-    
+
     def test_validate(self):
         request_info = {
             'request': {
