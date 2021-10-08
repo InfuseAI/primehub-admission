@@ -20,9 +20,11 @@ PrimeHub-admission utilized [Dynamic Admission Control](https://kubernetes.io/do
 You can specify which primehub-admission features to enable by giving the corresponding label to the Kubernetes namespace.
 
 ```
-kubectl label ns hub primehub.io/resources-validation-webhook=enabled
+# To enable Resource validation, PVC check, and License Check
+kubectl label ns hub primehub.io/admission-webhook=enabled
+
+# To enable Image mutation
 kubectl label ns hub primehub.io/image-mutation-webhook=enabled
-kubectl label ns hub primehub.io/pvc-check-webhook=enabled
 ```
 
 ## Deployment
