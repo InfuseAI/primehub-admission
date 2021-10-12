@@ -17,7 +17,7 @@ class LicenseCheck:
             return
 
         for line in license.split('\n'):
-            match = re.match(r"platform_type:\s*\"?(\w+)\"?", line)
+            match = re.match(r'platform_type:\s*"?(\w+)"?', line)
             if match:
                 license_platform_type = match.group(1)
                 if license_platform_type != self.platform:
