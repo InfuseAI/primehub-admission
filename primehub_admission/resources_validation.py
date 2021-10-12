@@ -6,7 +6,7 @@ from tornado import httpclient
 import json
 import yaml
 from loguru import logger
-from primehub_utils import *
+from .primehub_utils import *
 
 GRAPHQL_LAUNCH_CONTEXT_QUERY = '''query ($id: ID!) {
                     system { defaultUserVolumeCapacity }
@@ -51,7 +51,7 @@ class ResourcesValidation(object):
             self.admin_secret = os.environ.get('GRAPHQL_SHARED_SECRET', '')
 
     def fetch_all_users(self):
-        query = '''query { 
+        query = '''query {
             users {
                 id
                 username
@@ -80,7 +80,7 @@ class ResourcesValidation(object):
 
     def fetch_group_info(self, group):
         query = '''query ($name: String!) {
-                    groups(where: { name_contains: $name }) { 
+                    groups(where: { name_contains: $name }) {
                         name
                         displayName
                         enabledSharedVolume
@@ -157,7 +157,7 @@ class ResourcesValidation(object):
                 if pod.metadata.annotations.get(self.user_aggregation_key, '') == user_info['name'] and \
                     (pod.status.phase == "Pending" or pod.status.phase == "Running"):
                     containers.extend(pod.spec.containers)
-        
+
         cpu, gpu, mem = self.aggregate_resource_usage(containers, cpu, gpu, mem)
         return cpu, gpu, mem
 
@@ -188,7 +188,7 @@ class ResourcesValidation(object):
             cpu, gpu, memory
         }
         """
-        for resource_type in ['cpu', 'gpu', 'memory']:                
+        for resource_type in ['cpu', 'gpu', 'memory']:
             if quota[resource_type] is not None:
                 if usage[resource_type] is None:
                     usage[resource_type] = 0
@@ -203,7 +203,7 @@ class ResourcesValidation(object):
 
     def validate(self):
         user, group = self.get_user_and_group_from_request_info()
-        
+
         cpu_request, gpu_request, memory_request = self.get_request_resources(self.request_info)
         request = dict(cpu=cpu_request, gpu=gpu_request, memory=memory_request)
         logger.debug("requesting CPU: {} GPU: {} MEM: {}".format(cpu_request, gpu_request, memory_request))
@@ -225,7 +225,7 @@ class ResourcesValidation(object):
                 user_memory_limit = g['quotaMemory']
                 if user_memory_limit:
                     user_memory_limit = user_memory_limit * GiB()
-                
+
                 break
 
         user_quota_valid = True

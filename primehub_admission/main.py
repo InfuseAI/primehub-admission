@@ -9,9 +9,10 @@ import yaml
 import base64
 import copy
 
-from resources_validation import ResourcesValidation
-from image_patcher import get_image_paths, make_replace_patch_operator
-from pvc_check import PvcCheck
+from .resources_validation import ResourcesValidation
+from .image_patcher import get_image_paths, make_replace_patch_operator
+from .pvc_check import PvcCheck
+from .license_check import LicenseCheck
 app = Flask(__name__)
 
 # test connection
@@ -52,6 +53,46 @@ def pvc_check_webhook():
             "allowed": True,
         }
     return jsonify(dict(response=admission_response))
+
+@app.route('/license-check', methods=['POST'])
+def license_check_webhook():
+    try:
+        app.logger.debug(request.json)
+        platform_type = os.environ.get('PLATFORM_TYPE', None)
+        if platform_type == 'ee':
+            platform_type = 'enterprise'
+        license = request.json['request']['object']
+        LicenseCheck(platform_type).validate(license)
+        admission_response = {
+            "uid": request.json['request']['uid'],
+            "allowed": True,
+            "status": {
+                "code": 200,
+            }
+        }
+        return jsonify(dict(response=admission_response))
+    except RuntimeError as e:
+        app.logger.error(e)
+        admission_response = {
+            "uid": request.json['request']['uid'],
+            "allowed": False,
+            "status": {
+                "code": 400,
+                "message": str(e),
+            }
+        }
+        return jsonify(dict(response=admission_response))
+    except Exception as e:
+        app.logger.error(e)
+        admission_response = {
+            "uid": request.json['request']['uid'],
+            "allowed": False,
+            "status": {
+                "code": 500,
+                "message": str(e),
+            }
+        }
+        return jsonify(dict(response=admission_response))
 
 @app.route('/image-mutation', methods=['POST'])
 def image_mutation_webhook():
