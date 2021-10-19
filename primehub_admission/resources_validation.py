@@ -131,10 +131,14 @@ class ResourcesValidation(object):
         cpu, gpu, mem = (0, 0, 0)
         containers = []
         escaped_group_name = escape_to_primehub_label(group_info['name'])
-        pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector="{}={}".format(self.group_aggregation_key, escaped_group_name))
-        for pod in pods.items:
-            if pod.status.phase == "Pending" or pod.status.phase == "Running":
-                containers.extend(pod.spec.containers)
+        label_selector="{}={}".format(self.group_aggregation_key, escaped_group_name)
+
+        running_pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector=label_selector, field_selector="status.phase=Running")
+        pending_pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector=label_selector, field_selector="status.phase=Pending")
+        for pod in running_pods.items:
+            containers.extend(pod.spec.containers)
+        for pod in pending_pods.items:
+            containers.extend(pod.spec.containers)
 
         cpu, gpu, mem = self.aggregate_resource_usage(containers, cpu, gpu, mem)
         return cpu, gpu, mem
@@ -145,17 +149,26 @@ class ResourcesValidation(object):
         if self.user_aggregation_key_type == 'labels':
             escaped_group_name = escape_to_primehub_label(group_info['name'])
             escaped_user_name = escape_to_primehub_label(user_info['name'])
-            pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector="{}={}, {}={}".format(self.group_aggregation_key, escaped_group_name, self.user_aggregation_key, escaped_user_name))
-            for pod in pods.items:
-                if pod.status.phase == "Pending" or pod.status.phase == "Running":
-                    containers.extend(pod.spec.containers)
+            label_selector="{}={}, {}={}".format(self.group_aggregation_key, escaped_group_name, self.user_aggregation_key, escaped_user_name)
+
+            running_pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector=label_selector, field_selector="status.phase=Running")
+            pending_pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector=label_selector, field_selector="status.phase=Pending")
+            for pod in running_pods.items:
+                containers.extend(pod.spec.containers)
+            for pod in pending_pods.items:
+                containers.extend(pod.spec.containers)
 
         elif self.user_aggregation_key_type == 'annotations':
             escaped_group_name = escape_to_primehub_label(group_info['name'])
-            pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector="{}={}".format(self.group_aggregation_key, escaped_group_name))
-            for pod in pods.items:
-                if pod.metadata.annotations.get(self.user_aggregation_key, '') == user_info['name'] and \
-                    (pod.status.phase == "Pending" or pod.status.phase == "Running"):
+            label_selector="{}={}".format(self.group_aggregation_key, escaped_group_name)
+
+            running_pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector=label_selector, field_selector="status.phase=Running")
+            pending_pods = self.kube_api.list_namespaced_pod(self.namespace, label_selector=label_selector, field_selector="status.phase=Pending")
+            for pod in running_pods.items:
+                if pod.metadata.annotations.get(self.user_aggregation_key, '') == user_info['name']:
+                    containers.extend(pod.spec.containers)
+            for pod in pending_pods.items:
+                if pod.metadata.annotations.get(self.user_aggregation_key, '') == user_info['name']:
                     containers.extend(pod.spec.containers)
 
         cpu, gpu, mem = self.aggregate_resource_usage(containers, cpu, gpu, mem)
