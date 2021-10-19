@@ -1,0 +1,36 @@
+name: "Build/Publish primehub-admission docker images"
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  build-and-push-primehub-admission-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build & Publish
+        id: publish
+        run: |
+          ./publish.sh
+      - name: Update release
+        id: update_release
+        uses: tubone24/update_release@v1.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          isAppendBody: true
+          body: |
+            # primehub-admission
+
+            ## Image -> [DockerHub](https://hub.docker.com/repository/docker/infuseai/primehub-admission/general)
+              ${{ steps.publish.outputs.image_name }}
