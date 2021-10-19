@@ -18,7 +18,12 @@ class ResourcesValidationMock(ResourcesValidation):
         self.kube_api = Mock()
 
         pod_list = V1PodList(items=pods)
-        self.kube_api.list_namespaced_pod.return_value = pod_list
+        def mock_list_namespaced_pod_func(*args, **kwargs):
+            field_selector = kwargs.get("field_selector", '')
+            if field_selector == "status.phase=Running":
+                return pod_list
+            return V1PodList(items=[])
+        self.kube_api.list_namespaced_pod = MagicMock(side_effect=mock_list_namespaced_pod_func)
 
         self.fetch_group_info = Mock(return_value=group_info)
 
