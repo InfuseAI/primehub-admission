@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 
-from flask import Flask, request, jsonify
-import json
-import os
-import re
-import jsonpatch
-import yaml
 import base64
 import copy
+import json
+import os
 
-from .resources_validation import ResourcesValidation
-from .image_patcher import get_image_paths, make_replace_patch_operator
-from .pvc_check import PvcCheck
-from .license_check import LicenseCheck
+import jsonpatch
+from flask import Flask, request, jsonify
+
+from primehub_admission.image_patcher import get_image_paths, make_replace_patch_operator
+from primehub_admission.license_check import LicenseCheck
+from primehub_admission.pvc_check import PvcCheck
+from primehub_admission.resources_validation import ResourcesValidation
+
 app = Flask(__name__)
+
 
 # test connection
 @app.route('/', methods=['GET'])
 def hello_world():
     return jsonify({'message': 'hello world'})
+
 
 @app.route('/pvc-check', methods=['POST'])
 def pvc_check_webhook():
@@ -52,7 +54,8 @@ def pvc_check_webhook():
             "uid": request.json['request']['uid'],
             "allowed": True,
         }
-    return jsonify(dict(response=admission_response))
+    return to_admission_review(admission_response)
+
 
 @app.route('/license-check', methods=['POST'])
 def license_check_webhook():
@@ -70,7 +73,7 @@ def license_check_webhook():
                 "code": 200,
             }
         }
-        return jsonify(dict(response=admission_response))
+        return to_admission_review(admission_response)
     except RuntimeError as e:
         app.logger.error(e)
         admission_response = {
@@ -81,7 +84,7 @@ def license_check_webhook():
                 "message": str(e),
             }
         }
-        return jsonify(dict(response=admission_response))
+        return to_admission_review(admission_response)
     except Exception as e:
         app.logger.error(e)
         admission_response = {
@@ -92,7 +95,8 @@ def license_check_webhook():
                 "message": str(e),
             }
         }
-        return jsonify(dict(response=admission_response))
+        return to_admission_review(admission_response)
+
 
 @app.route('/image-mutation', methods=['POST'])
 def image_mutation_webhook():
@@ -105,7 +109,7 @@ def image_mutation_webhook():
             # it should configure a prefix, example "primehub.airgap:5000/"
             app.logger.debug('no IMAGE_PREFIX, skip to replace image.')
             # skip mutation while prefix is empty
-            return jsonify(dict(response=dict(allowed=True)))
+            return to_admission_review(dict(response=dict(allowed=True)))
 
         json_patch = make_replace_patch_operator(prefix, get_image_paths(pod))
         admission_response = {
@@ -114,7 +118,7 @@ def image_mutation_webhook():
             "patchType": "JSONPatch",
             "patch": base64.b64encode(json.dumps(json_patch).encode()).decode()
         }
-        return jsonify(dict(response=admission_response))
+        return to_admission_review(admission_response)
     except Exception as e:
         app.logger.error(e)
         admission_response = {
@@ -126,23 +130,22 @@ def image_mutation_webhook():
                 "code": 410
             }
         }
-        return jsonify(dict(response=admission_response))
+        return to_admission_review(admission_response)
 
 
 @app.route('/', methods=['POST'])
 def webhook():
-    app.logger.debug(request.json)
-
+    app.logger.debug(f'request-body: {json.dumps(request.json)}')
     request_info = request.json
 
     selected = select_pod(request_info['request']['object']['metadata'].get('labels', {}))
     if selected:
         try:
             rv = ResourcesValidation(request_info, \
-                                    group_aggregation_key="primehub.io/group", \
-                                    group_aggregation_key_type="labels", \
-                                    user_aggregation_key="primehub.io/user", \
-                                    user_aggregation_key_type="labels")
+                                     group_aggregation_key="primehub.io/group", \
+                                     group_aggregation_key_type="labels", \
+                                     user_aggregation_key="primehub.io/user", \
+                                     user_aggregation_key_type="labels")
             allowed = rv.validate()
         except Exception as e:
             app.logger.error(e)
@@ -155,7 +158,7 @@ def webhook():
                 "uid": request.json['request']['uid'],
                 "allowed": True,
                 "patch": base64.b64encode(str(patch).encode()).decode(),
-                "patchtype": "JSONPatch"
+                "patchType": "JSONPatch"
             }
         else:
             admission_response = {
@@ -174,12 +177,21 @@ def webhook():
             "allowed": True,
         }
 
-    admissionReview = {
+    return to_admission_review(admission_response)
+
+
+def to_admission_review(admission_response: dict):
+    admission_review = {
+        "apiVersion": "admission.k8s.io/v1",
+        "kind": "AdmissionReview",
         "response": admission_response
     }
+    if 'patch' in admission_response:
+        # make sure patchType has been set.
+        admission_response["patchType"] = "JSONPatch"
+    app.logger.debug(f'admission-review: {json.dumps(admission_review)}')
+    return jsonify(admission_review)
 
-    app.logger.debug(admissionReview)
-    return jsonify(admissionReview)
 
 def select_pod(labels):
     # We need group in labels to get quota information
@@ -187,6 +199,7 @@ def select_pod(labels):
         return True
 
     return False
+
 
 def stamp_pod_by_admission(pod_json):
     initContainers = pod_json.get('spec', {}).get('initContainers', [])
@@ -196,6 +209,8 @@ def stamp_pod_by_admission(pod_json):
             break
     return pod_json
 
-# Flask development server
-# app.run(host='0.0.0.0', port=5000, debug=os.environ.get('FLASK_DEBUG', 'true')=="true", ssl_context=('./ssl/cert.pem', './ssl/key.pem'))
 
+if __name__ == '__main__':
+    # Flask development server
+    app.run(host='0.0.0.0', port=5000, debug=os.environ.get('FLASK_DEBUG', 'true') == "true",
+            ssl_context=('./ssl/cert.pem', './ssl/key.pem'))
