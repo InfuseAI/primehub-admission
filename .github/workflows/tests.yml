@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - feature/*
   pull_request:
     branches:
       - master
@@ -14,14 +15,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Run unit tests
         run: |
+            # sudo apt install libcurl4-openssl-dev
             make update-shared-lib
             primehub_sha=$(make get-primehub-sha)
             z2jh_sha=$(curl -s "https://api.github.com/repos/infuseai/primehub/contents/vendor?ref=${primehub_sha}" | grep -o -e '"sha": "\w\+"' | tr -d '"' | cut -d' ' -f2)
             python -m pip install -U pip
-            pip3 install -r https://raw.githubusercontent.com/InfuseAI/zero-to-jupyterhub-k8s/${z2jh_sha}/images/hub/requirements.txt
+            # pip3 install -r https://raw.githubusercontent.com/InfuseAI/zero-to-jupyterhub-k8s/${z2jh_sha}/images/hub/requirements.txt
             pip3 install -r requirements.txt
             pip3 install pytest-cov
 
