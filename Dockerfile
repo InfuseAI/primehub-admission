@@ -1,5 +1,5 @@
 # Python image to use.
-FROM python:3.7-alpine
+FROM python:3.10-alpine
 
 RUN apk add binutils libc-dev gcc libffi-dev openssl-dev build-base
 
