@@ -1,12 +1,10 @@
 import json
-import os
-import re
+
 from kubernetes import client, config
-from tornado import httpclient
-import json
-import yaml
 from loguru import logger
-from .primehub_utils import *
+from tornado import httpclient
+
+from primehub_admission.primehub_utils import *
 
 GRAPHQL_LAUNCH_CONTEXT_QUERY = '''query ($id: ID!) {
                     system { defaultUserVolumeCapacity }
