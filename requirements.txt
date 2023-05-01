@@ -2,6 +2,6 @@ jupyterhub-kubespawner==1.1.0
 kubernetes==20.13.0
 loguru==0.4.1
 jsonpatch==1.25
-flask==2.2.2
+flask==2.3.2
 gunicorn==20.1.0
 pytest
