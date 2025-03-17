@@ -117,11 +117,21 @@ class ResourcesValidation(object):
             group_name = unescape_primehub_label(group_name)
         return ({'name': username}, {'name': group_name})
 
+    def _get_gpu_resource_from_limits(self, limits):
+        if 'nvidia.com/gpu' in limits:
+            return limits['nvidia.com/gpu']
+        if 'amd.com/gpu' in limits:
+            return limits['amd.com/gpu']
+        for k, v in limits.items():
+            if k.startswith('gpu.intel.com/'):
+                return v
+        return 0
+
     def aggregate_resource_usage(self, containers, cpu, gpu, mem):
         for container in containers:
             if container.resources and container.resources.limits:
                 cpu += float(convert_cpu_values_to_float(container.resources.limits.get('cpu', 0)))
-                gpu += int(container.resources.limits.get('nvidia.com/gpu', 0))
+                gpu += int(self._get_gpu_resource_from_limits(container.resources.limits))
                 mem += int(convert_mem_resource_to_bytes(container.resources.limits.get('memory', 0)))
         return (cpu, gpu, mem)
 
@@ -179,7 +189,7 @@ class ResourcesValidation(object):
         for container in request_info['request']['object']['spec']['containers']:
             request_resources_limit = container.get('resources', {}).get('limits', {})
             cpu_request += float(convert_cpu_values_to_float(request_resources_limit.get('cpu', 0)))
-            gpu_request += int(request_resources_limit.get('nvidia.com/gpu', 0))
+            gpu_request += int(self._get_gpu_resource_from_limits(request_resources_limit))
             mem_request += convert_mem_resource_to_bytes(request_resources_limit.get('memory', 0))
         return cpu_request, gpu_request, mem_request
 
