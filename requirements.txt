@@ -1,6 +1,6 @@
 jupyterhub-kubespawner==1.1.0
 kubernetes==20.13.0
-loguru==0.4.1
+loguru==0.5.3
 jsonpatch==1.25
 flask==2.2.5
 gunicorn==22.0.0
